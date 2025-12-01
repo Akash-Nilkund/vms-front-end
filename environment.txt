@@ -1,0 +1,27 @@
+# Environment Variables Analysis
+
+The following configuration values were found hardcoded in the codebase or in configuration files. They are candidates for extraction into a `.env` file.
+
+## Current Hardcoded Values
+
+1. **API Base URL (src/api.js)**
+   - Current Value: `http://localhost:8080/api`
+   - Suggested Env Var: `REACT_APP_API_BASE_URL`
+
+2. **API Base URL (src/services/api.js)**
+   - Current Value: `http://localhost:8080`
+   - Suggested Env Var: `REACT_APP_API_ROOT_URL`
+   - Note: This differs from `src/api.js` by missing the `/api` suffix.
+
+3. **Proxy (package.json)**
+   - Current Value: `http://localhost:8080`
+   - Note: Used by Create React App in development to proxy API requests.
+
+## Recommended .env Content
+
+If you were to create a `.env` file, it should look like this:
+
+```env
+REACT_APP_API_BASE_URL=http://localhost:8080/api
+REACT_APP_API_ROOT_URL=http://localhost:8080
+```
