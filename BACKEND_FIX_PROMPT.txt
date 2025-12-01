@@ -1,0 +1,26 @@
+The frontend is correctly sending a `multipart/form-data` request with a `visitorJsonData` part (application/json) and an optional `photo` part.
+However, the backend is returning a 500 error: "Content-Type 'application/json' is not supported".
+This indicates the backend is either expecting a pure JSON request or is misconfigured to handle the Multipart request.
+
+Please check the `VisitorController.java` and ensure the `registerVisitor` method is configured exactly as follows:
+
+```java
+@PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<?> registerVisitor(
+    @RequestPart("visitorJsonData") String visitorJsonData, // Or VisitorDTO if using a custom converter
+    @RequestPart(value = "photo", required = false) MultipartFile photo
+) {
+    // Logic to parse visitorJsonData if it's a String, e.g., using ObjectMapper
+    // ObjectMapper mapper = new ObjectMapper();
+    // VisitorDTO visitorDTO = mapper.readValue(visitorJsonData, VisitorDTO.class);
+    // ...
+}
+```
+
+**Key Checks:**
+1.  **`consumes = MediaType.MULTIPART_FORM_DATA_VALUE`**: This is critical.
+2.  **`@RequestPart`**: Ensure you are using `@RequestPart`, NOT `@RequestBody`.
+3.  **JSON Handling**: If `@RequestPart("visitorJsonData") VisitorDTO visitorDTO` fails with "Content-Type not supported", try changing the type to `String` and manually parsing it with `ObjectMapper` to rule out converter issues.
+4.  **Security Config**: Ensure `SecurityConfig.java` allows `multipart/form-data` requests to this endpoint (though usually it's allowed by default).
+
+If the error persists, check the backend logs for the full stack trace to see exactly which component is throwing the `HttpMediaTypeNotSupportedException`.

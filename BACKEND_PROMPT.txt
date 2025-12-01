@@ -1,0 +1,26 @@
+You are an expert Spring Boot developer. I need you to update the backend for my Visitor Management System (VMS) to support two new fields: `idProof` and `gender`.
+
+Here are the specific requirements:
+
+1.  **Entity Update**:
+    -   Modify the `Visitor` entity (likely in `src/main/java/com/vms/backend/model/Visitor.java`) to include:
+        -   `private String idProof;`
+        -   `private String gender;`
+    -   Ensure these columns are added to the database (update `schema.sql` or rely on Hibernate `ddl-auto`).
+
+2.  **DTO Update**:
+    -   Update the `VisitorRequest` or `VisitorDTO` (used in the registration endpoint) to accept `idProof` and `gender`.
+    -   Ensure the `VisitorService` maps these fields from the DTO to the Entity during registration.
+
+3.  **PDF Pass Generation (CRITICAL)**:
+    -   Update the `PdfService` (likely `src/main/java/com/vms/backend/service/PdfService.java`) to display these new fields on the generated PDF pass.
+    -   **SECURITY REQUIREMENT**: The `idProof` MUST be masked on the PDF.
+    -   **Masking Logic**: Show only the first 2 and last 2 characters, masking the rest with `****`.
+        -   Example: `A1234567B` -> `A1****7B`
+        -   Example: `1234` -> `1234` (or handle short strings gracefully)
+    -   Display "Gender" as selected (Male/Female/Others).
+
+4.  **Response DTO**:
+    -   Ensure the `VisitorResponse` or `VisitorDTO` returned to the frontend includes these fields so they can be displayed in the UI.
+
+Please provide the complete code changes for the Entity, DTO, Service, and specifically the masking logic in the PDF Service.

@@ -1,0 +1,145 @@
+FIX REPORT: Visitor Registration 500 Error
+
+ISSUE ANALYSIS:
+The error "Content-Type 'application/json' is not supported" combined with a 500 status code indicates that the backend `VisitorController` is failing to process the `multipart/form-data` request sent by the frontend.
+The frontend correctly constructs a `FormData` object with:
+1. `visitorJsonData`: A JSON blob containing visitor details.
+2. `photo`: An optional image file.
+
+The backend likely expects `@RequestBody` (which implies pure JSON) or is missing the correct `consumes` configuration for `multipart/form-data`.
+
+SOLUTION:
+Update the backend `VisitorController.java` and `VisitorService.java` to correctly handle `multipart/form-data` using `@RequestPart`.
+
+--------------------------------------------------------------------------------
+1. VisitorController.java
+Location: src/main/java/com/vms/backend/controller/VisitorController.java
+--------------------------------------------------------------------------------
+
+package com.vms.backend.controller;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vms.backend.dto.VisitorDTO;
+import com.vms.backend.entity.Visitor;
+import com.vms.backend.service.VisitorService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/visitors")
+@CrossOrigin(origins = "http://localhost:3000") // Adjust if needed
+public class VisitorController {
+
+    @Autowired
+    private VisitorService visitorService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // FIX: Use @RequestPart for both JSON and File
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Visitor> registerVisitor(
+            @RequestPart("visitorJsonData") String visitorJsonData, // Receive as String to avoid Content-Type issues
+            @RequestPart(value = "photo", required = false) MultipartFile photo) throws IOException {
+        
+        // Manually parse JSON to ensure control over deserialization
+        VisitorDTO visitorDTO = objectMapper.readValue(visitorJsonData, VisitorDTO.class);
+        
+        Visitor registeredVisitor = visitorService.registerVisitor(visitorDTO, photo);
+        return ResponseEntity.ok(registeredVisitor);
+    }
+
+    // ... other methods
+}
+
+--------------------------------------------------------------------------------
+2. VisitorService.java
+Location: src/main/java/com/vms/backend/service/VisitorService.java
+--------------------------------------------------------------------------------
+
+package com.vms.backend.service;
+
+import com.vms.backend.dto.VisitorDTO;
+import com.vms.backend.entity.Visitor;
+import com.vms.backend.repository.VisitorRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+
+@Service
+public class VisitorService {
+
+    @Autowired
+    private VisitorRepository visitorRepository;
+
+    // Ensure you have a method that accepts DTO and MultipartFile
+    public Visitor registerVisitor(VisitorDTO visitorDTO, MultipartFile photo) throws IOException {
+        Visitor visitor = new Visitor();
+        
+        // Map fields from DTO to Entity
+        visitor.setName(visitorDTO.getName());
+        visitor.setEmail(visitorDTO.getEmail());
+        visitor.setPhone(visitorDTO.getPhone());
+        visitor.setVisitorType(visitorDTO.getVisitorType());
+        visitor.setDuration(visitorDTO.getDuration());
+        visitor.setIdProof(visitorDTO.getIdProof());
+        visitor.setGender(visitorDTO.getGender());
+        
+        // Handle Company and Host relationships (assuming you have repositories for them)
+        // visitor.setCompany(companyRepository.findById(visitorDTO.getCompanyId()).orElse(null));
+        // visitor.setHost(hostRepository.findById(visitorDTO.getHostId()).orElse(null));
+
+        visitor.setStatus("PENDING"); // Default status
+
+        // Handle Photo Upload
+        if (photo != null && !photo.isEmpty()) {
+            String photoUrl = savePhoto(photo);
+            visitor.setPhotoUrl(photoUrl);
+        }
+
+        return visitorRepository.save(visitor);
+    }
+
+    private String savePhoto(MultipartFile photo) throws IOException {
+        // Simple file save logic
+        String folder = "uploads/visitor-photos/";
+        Path uploadPath = Paths.get(folder);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String fileName = UUID.randomUUID().toString() + "_" + photo.getOriginalFilename();
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(photo.getInputStream(), filePath);
+        return "/visitor-photos/" + fileName; // Return relative URL
+    }
+}
+
+--------------------------------------------------------------------------------
+3. SecurityConfig.java (Check if needed)
+Location: src/main/java/com/vms/backend/config/SecurityConfig.java
+--------------------------------------------------------------------------------
+Ensure that the /api/visitors/register endpoint is accessible.
+
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers("/api/visitors/register").permitAll() // Allow registration without login
+    // ... other configs
+)
+.csrf(csrf -> csrf.disable()) // Disable CSRF for non-browser clients or if handling manually
+
+--------------------------------------------------------------------------------
+SUMMARY OF CHANGES:
+1. Changed `VisitorController.registerVisitor` to consume `MULTIPART_FORM_DATA_VALUE`.
+2. Used `@RequestPart("visitorJsonData") String` to receive the JSON blob as a string and manually parse it with `ObjectMapper`. This avoids the "Content-Type 'application/json' not supported" error that sometimes happens when Spring tries to auto-convert a part with a specific content type that the container doesn't like.
+3. Added `MultipartFile photo` as an optional part.

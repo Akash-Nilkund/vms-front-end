@@ -1,0 +1,68 @@
+GUIDE: CONNECTING COMPANY AND HOST
+
+To ensure that selecting a Company automatically filters the list of Hosts, you need to link them in the Backend and update the Frontend logic.
+
+STEP 1: BACKEND CHANGES (Spring Boot)
+
+1.  **Update Host Entity (`Host.java`)**
+    -   Add a relationship to the Company entity.
+    -   `@ManyToOne @JoinColumn(name = "company_id") private Company company;`
+
+2.  **Update Host DTO (`HostDTO.java`)**
+    -   Add a field `private Long companyId;`.
+    -   Ensure your mapper converts `host.getCompany().getId()` to this field.
+
+3.  **Update API Response**
+    -   Ensure the endpoint `/api/hosts` returns the `companyId` for every host in the list.
+    -   Example JSON: `[ { "id": 1, "name": "Alice", "companyId": 101 }, ... ]`
+
+---
+
+STEP 2: FRONTEND CHANGES (React - VisitorCheckInForm.jsx)
+
+1.  **Update State**
+    -   You already have `const [hosts, setHosts] = useState([]);` which holds ALL hosts.
+    -   You do NOT need a new state variable if you filter dynamically.
+
+2.  **Implement Filtering Logic**
+    -   Inside your component, create a derived variable that filters the master list based on the selected company.
+
+    ```javascript
+    // Derived state: Filter hosts based on selected company
+    const filteredHosts = formData.companyId 
+      ? hosts.filter(host => String(host.companyId) === String(formData.companyId))
+      : []; // Or keep 'hosts' if you want to show all when no company is selected
+    ```
+
+3.  **Update the Dropdown**
+    -   Change the `.map()` in your Host `<select>` to use `filteredHosts` instead of `hosts`.
+
+    ```javascript
+    <select name="hostId" ... >
+      <option value="">Select Host</option>
+      {filteredHosts.map(h => (
+        <option key={h.id} value={h.id}>{h.name}</option>
+      ))}
+    </select>
+    ```
+
+4.  **Reset Host on Company Change**
+    -   When the user changes the Company, you must clear the currently selected Host, otherwise, they might have a mismatch (Company A selected, but Host B from Company B still selected).
+
+    ```javascript
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      
+      if (name === 'companyId') {
+        // If company changes, reset host
+        setFormData(prev => ({ ...prev, companyId: value, hostId: '' }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+      // ... error handling ...
+    };
+    ```
+
+SUMMARY
+1.  **Backend:** Link Host to Company and send `companyId` in API.
+2.  **Frontend:** Filter the Host list based on the selected Company ID.

@@ -1,0 +1,36 @@
+ISSUE ANALYSIS: VISITOR PASS LAYOUT & QR CODE SIZE
+
+PROBLEM:
+The "Visitor Pass" is currently taking up too much vertical space, likely causing it to spill over onto a second page when printed or viewed on smaller screens.
+
+CAUSES:
+1. QR Code Size:
+   - The QR code is currently set to a fixed size of `160` pixels (size={160}).
+   - This is relatively large for a compact pass.
+
+2. Spacing (Margins & Padding):
+   - The component uses generous spacing:
+     - `my-8` (32px vertical margin) on the main container.
+     - `p-6` (24px padding) inside the card.
+     - `mb-8` (32px bottom margin) after the details grid.
+     - `mb-8` (32px bottom margin) after the QR code section.
+     - `mb-6` (24px margin) in the profile section.
+
+3. Profile Image Size:
+   - The profile image is `w-24 h-24` (96px), which is prominent but adds to the height.
+
+PROPOSED SOLUTION (To be implemented later):
+To fit everything on one page, we should compact the layout:
+
+1. Reduce QR Code Size:
+   - Change `size={160}` to `size={100}` or `size={120}`.
+
+2. Reduce Vertical Spacing:
+   - Change `mb-8` to `mb-4` or `mb-2` in multiple places.
+   - Reduce container padding from `p-6` to `p-4`.
+
+3. Adjust Layout:
+   - Potentially move the QR code side-by-side with the details, or make the header/profile section more compact.
+
+DO NOT IMPLEMENT YET (As per instructions).
+This file serves as the explanation of the problem.

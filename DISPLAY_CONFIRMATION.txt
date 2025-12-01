@@ -1,0 +1,14 @@
+Yes, absolutely.
+
+If the backend database (`vms_db`) has records in the `companies` and `hosts` tables, they MUST appear in the "Visiting" (Company) and "Host" dropdown menus on the Visitor Check-In form.
+
+Here is how it works in `VisitorCheckInForm.jsx`:
+1.  **On Load**: The `useEffect` hook runs immediately when the page opens.
+2.  **Fetch**: It calls `visitorService.getAllCompanies()` and `visitorService.getAllHosts()`.
+3.  **State Update**: The data returned from the backend is saved into the `companies` and `hosts` state variables.
+4.  **Render**: The form renders `<select>` dropdowns that map over these state arrays.
+
+**If you do NOT see them:**
+-   The backend might be returning an empty list (tables are empty).
+-   The backend might be down or returning an error (check the browser console for red error messages).
+-   The API endpoints `/api/companies` or `/api/hosts` might be incorrect or failing.

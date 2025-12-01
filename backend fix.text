@@ -1,0 +1,31 @@
+I am getting a "Required part 'visitor' or 'visitorJsonData' is not present" 400 error when trying to register a visitor from the frontend.
+
+The frontend is sending a Multipart request with:
+1. "visitorJsonData": A JSON Blob containing the visitor details (Content-Type: application/json).
+2. "photo": An optional image file.
+
+Please update the `VisitorController` and `VisitorService` in the Spring Boot backend to correctly handle this request.
+
+Requirements:
+1. The endpoint `/api/visitors/register` should accept `multipart/form-data`.
+2. Use `@RequestPart("visitorJsonData")` to receive the visitor DTO.
+3. Use `@RequestPart(value = "photo", required = false)` to receive the `MultipartFile`.
+4. Ensure the JSON deserialization works correctly for the `visitorJsonData` part.
+5. Verify that `VisitorDTO` matches the fields sent by the frontend (fullName, email, phone, companyId, hostId, visitorType, duration, idProof, gender).
+
+Here is the frontend payload structure for reference:
+```json
+{
+  "fullName": "...",
+  "email": "...",
+  "phone": "...",
+  "companyId": "...",
+  "hostId": "...",
+  "visitorType": "...",
+  "duration": "...",
+  "idProof": "...",
+  "gender": "..."
+}
+```
+
+Please provide the corrected Controller and Service code.

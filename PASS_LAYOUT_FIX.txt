@@ -1,0 +1,139 @@
+/* 
+   SOLUTION: VISITOR PASS LAYOUT ALIGNMENT
+   
+   This file contains the React component code to match the layout of "Image 2".
+   
+   INSTRUCTIONS:
+   1. Update `VisitorCheckInForm.jsx` to include `email`, `phone`, and `checkInTime` in the `passData` object passed to the navigate function.
+   2. Replace the content of `src/components/VirtualVisitorPass.jsx` with the code below.
+*/
+
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import QRCode from 'react-qr-code';
+import PropTypes from 'prop-types';
+
+const VirtualVisitorPass = ({ visitor }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const data = location.state?.visitor || visitor;
+
+  useEffect(() => {
+    if (!data) {
+      navigate('/', { replace: true });
+    }
+  }, [data, navigate]);
+
+  if (!data) return null;
+
+  // Helper for rows
+  const DetailRow = ({ label, value }) => (
+    <div className="flex flex-col mb-2">
+      <span className="text-xs font-bold text-black uppercase tracking-wide">{label}:</span>
+      <span className="text-sm font-medium text-gray-800">{value || 'N/A'}</span>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      {/* Main Card Container - Mimicking the white paper look with borders */}
+      <div className="w-full max-w-lg bg-white shadow-2xl overflow-hidden border-4 border-gray-900">
+        
+        {/* HEADER SECTION */}
+        <div className="bg-white p-8 border-b-4 border-gray-900 text-center">
+          <h1 className="text-3xl font-black text-gray-900 uppercase tracking-widest">
+            VISITOR PASS
+          </h1>
+        </div>
+
+        {/* BODY SECTION - Split Layout */}
+        <div className="p-8 flex flex-row gap-6 border-b-4 border-gray-900">
+          
+          {/* LEFT COLUMN - Details */}
+          <div className="flex-1 space-y-1">
+             {/* Using bold labels as per image */}
+             <div className="mb-3">
+                <span className="font-bold text-gray-900 text-sm">Name: </span>
+                <span className="text-gray-800 text-sm">{data.fullName}</span>
+             </div>
+             <div className="mb-3">
+                <span className="font-bold text-gray-900 text-sm">Contact: </span>
+                <span className="text-gray-800 text-sm">{data.phone || 'N/A'}</span>
+             </div>
+             <div className="mb-3">
+                <span className="font-bold text-gray-900 text-sm">Email: </span>
+                <span className="text-gray-800 text-sm break-all">{data.email || 'N/A'}</span>
+             </div>
+             <div className="mb-3">
+                <span className="font-bold text-gray-900 text-sm">ID Proof: </span>
+                <span className="text-gray-800 text-sm">{data.idProof || 'N/A'}</span>
+             </div>
+             <div className="mb-3">
+                <span className="font-bold text-gray-900 text-sm">Host: </span>
+                <span className="text-gray-800 text-sm">{data.host}</span>
+             </div>
+             <div className="mb-3">
+                <span className="font-bold text-gray-900 text-sm">Type: </span>
+                <span className="text-gray-800 text-sm uppercase">{data.type}</span>
+             </div>
+             <div className="mb-3">
+                <span className="font-bold text-gray-900 text-sm">Check-In: </span>
+                <span className="text-gray-800 text-sm">{data.date} {data.checkInTime || ''}</span>
+             </div>
+          </div>
+
+          {/* RIGHT COLUMN - Photo & QR */}
+          <div className="w-32 flex flex-col items-end justify-between">
+            {/* Photo */}
+            <div className="w-32 h-32 bg-gray-200 border-2 border-gray-300 overflow-hidden mb-4">
+               <img 
+                 src={data.photoUrl} 
+                 alt="Visitor" 
+                 className="w-full h-full object-cover"
+               />
+            </div>
+
+            {/* QR Code */}
+            <div className="w-32 h-32">
+               <QRCode 
+                 value={JSON.stringify({ id: data.id, name: data.fullName })} 
+                 size={128}
+                 level="H"
+                 style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+               />
+            </div>
+          </div>
+        </div>
+
+        {/* FOOTER SECTION */}
+        <div className="p-8 text-center">
+          <p className="text-xs text-gray-500 italic font-medium">
+            Please display this pass at all times.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+VirtualVisitorPass.propTypes = {
+  visitor: PropTypes.shape({
+    id: PropTypes.string,
+    fullName: PropTypes.string,
+    photoUrl: PropTypes.string,
+    type: PropTypes.string,
+    company: PropTypes.string,
+    host: PropTypes.string,
+    date: PropTypes.string,
+    duration: PropTypes.string,
+    status: PropTypes.string,
+    email: PropTypes.string,
+    phone: PropTypes.string,
+    idProof: PropTypes.string,
+    checkInTime: PropTypes.string
+  }),
+};
+
+export default VirtualVisitorPass;

@@ -1,0 +1,69 @@
+You are an expert Spring Boot developer. I need you to update the configuration files in my backend project to fix CORS issues and correct the resource handler path for visitor photos.
+
+Please update (or create if missing) the following two files in `src/main/java/com/vms/backend/config/`:
+
+### 1. `WebMvcConfig.java`
+Update this file to ensure the resource handler points to `/visitor-photos/**` and CORS allows ports 3000 and 3001.
+
+```java
+package com.vms.backend.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        // Serve uploaded photos from the local filesystem
+        registry.addResourceHandler("/visitor-photos/**")
+                .addResourceLocations("file:visitor-photos/");
+    }
+
+    @Override
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000", "http://localhost:3001")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```
+
+### 2. `WebSocketConfig.java`
+Update this file to explicitly allow the frontend origins for WebSocket connections.
+
+```java
+package com.vms.backend.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/topic", "/queue", "/dashboard");
+        config.setApplicationDestinationPrefixes("/app");
+    }
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("http://localhost:3000", "http://localhost:3001")
+                .withSockJS();
+    }
+}
+```
+
+Please confirm when these changes are applied.

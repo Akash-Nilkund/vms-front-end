@@ -1,0 +1,24 @@
+# Backend CORS Fix for WebSocket
+
+The "403 Forbidden" errors in the console indicate that the Spring Boot backend is rejecting the WebSocket connection from the frontend. This is likely because the frontend is running on a port (e.g., `http://localhost:3001`) that is not whitelisted in the WebSocket configuration.
+
+## Instructions
+
+1.  Open your Spring Boot backend project.
+2.  Locate the `WebSocketConfig.java` file (usually in `config` package).
+3.  Update the `registerStompEndpoints` method to allow the specific frontend origin.
+
+### Example Change
+
+```java
+@Override
+public void registerStompEndpoints(StompEndpointRegistry registry) {
+    registry.addEndpoint("/ws")
+            .setAllowedOrigins("http://localhost:3000", "http://localhost:3001") // Add your frontend port here
+            .withSockJS();
+}
+```
+
+4.  Also check `WebConfig.java` or your global CORS configuration to ensure `http://localhost:3001` is allowed for REST endpoints if you are seeing other CORS errors.
+
+5.  Restart the backend server.

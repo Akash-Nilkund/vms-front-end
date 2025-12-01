@@ -1,0 +1,69 @@
+# Backend Fixes (Final)
+
+Here are the corrected versions of your configuration files.
+
+## 1. WebSocketConfig.java
+**Analysis of your code:** Your `WebSocketConfig` correctly allows CORS for ports 3000 and 3001.
+**Improvement:** I have added `/topic` and `/queue` to `enableSimpleBroker` to ensure standard messaging patterns also work if you expand the app later.
+
+```java
+package com.vms.backend.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        // FIXED: Added /topic and /queue for standard support, kept /dashboard
+        config.enableSimpleBroker("/topic", "/queue", "/dashboard");
+        config.setApplicationDestinationPrefixes("/app");
+    }
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("http://localhost:3000", "http://localhost:3001") // Correctly allows both
+                .withSockJS();
+    }
+}
+```
+
+## 2. WebMvcConfig.java
+**Critical Fix:** You must update the resource handler path to match what the frontend expects (`/visitor-photos/**`).
+
+```java
+package com.vms.backend.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        // FIXED: Changed "/photos/**" to "/visitor-photos/**" to match frontend requests
+        registry.addResourceHandler("/visitor-photos/**")
+                .addResourceLocations("file:visitor-photos/");
+    }
+
+    @Override
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000", "http://localhost:3001")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```

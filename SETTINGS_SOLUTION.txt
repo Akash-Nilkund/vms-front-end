@@ -1,0 +1,67 @@
+SOLUTION: ADDING SETTINGS FOR COMPANY AND HOST MANAGEMENT
+
+I have implemented a new "Settings" page in the Admin Dashboard that allows you to:
+1.  Add a new Company.
+2.  Add a new Host and link them to an existing Company.
+
+Here is the summary of changes:
+
+1.  **Updated `src/services/visitorService.js`**:
+    - Added `createCompany` and `createHost` API methods to communicate with the backend.
+
+2.  **Created `src/components/Settings.jsx`**:
+    - This is a new component with two forms side-by-side.
+    - **Add Company Form**: Takes a Company Name and Address.
+    - **Add Host Form**: Takes Host Name, Email, Phone, Department, and a Dropdown to select the Company.
+    - The Host form dynamically fetches the list of companies so you can select one.
+
+3.  **Updated `src/App.jsx`**:
+    - Imported the `Settings` component.
+    - Replaced the placeholder text in the `/admin/settings` route with the actual `Settings` component.
+
+HOW TO USE:
+1.  Log in to the Admin Dashboard.
+2.  Click on "Settings" in the left sidebar.
+3.  To add a Company: Fill in the "Add New Company" form and click "Add Company".
+4.  To add a Host: Fill in the "Add New Host" form, select the Company you just added from the dropdown, and click "Save Host".
+
+CODE SNIPPETS:
+
+**1. visitorService.js (New Methods)**
+```javascript
+    // POST - Create new company
+    createCompany: async (companyData) => {
+        const response = await apiClient.post('/api/companies', companyData);
+        return response.data;
+    },
+
+    // POST - Create new host
+    createHost: async (hostData) => {
+        const response = await apiClient.post('/api/hosts', hostData);
+        return response.data;
+    },
+```
+
+**2. Settings.jsx (Key Logic)**
+```javascript
+    // Fetch companies for the dropdown
+    const fetchCompanies = async () => {
+        const data = await visitorService.getAllCompanies();
+        setCompanies(data);
+    };
+
+    // Handle Host Submit
+    const handleHostSubmit = async (e) => {
+        e.preventDefault();
+        // ... validation ...
+        await visitorService.createHost(hostForm); // hostForm contains companyId
+        // ... success message ...
+    };
+```
+
+**3. App.jsx (Route)**
+```javascript
+import Settings from "./components/Settings";
+// ...
+<Route path="settings" element={<Settings />} />
+```

@@ -1,0 +1,16 @@
+DATABASE CHECK REPORT
+---------------------
+Status: CONFIRMED
+
+1. Backend Verification:
+   - The API endpoint `/api/hosts` is correctly returning the `companyId` field.
+   - Verified for host "Alice Host" (ID: 1), which has `companyId: 3`.
+
+2. Data Issue Confirmation:
+   - The backend logic is fully operational.
+   - If hosts are not appearing when a company is selected, it is because their `companyId` is NULL in the database.
+   - You need to manually update the `host` table in your database to assign valid `company_id` values to all hosts.
+
+Action Required:
+- Run SQL updates on your database:
+  UPDATE host SET company_id = [VALID_COMPANY_ID] WHERE id = [HOST_ID];

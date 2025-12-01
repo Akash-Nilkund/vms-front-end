@@ -1,0 +1,60 @@
+PREFLIGHT REQUESTS: PROBLEM & SOLUTION
+
+1. THE OBSERVATION (What you see in the Network Tab)
+---------------------------------------------------
+You noticed that for a single action (like "Approve" or "Check-In"), the browser sends TWO requests:
+   - Request 1: Type = "preflight" (Method: OPTIONS)
+   - Request 2: Type = "xhr" or "fetch" (Method: PATCH, POST, etc.)
+
+Sometimes the "preflight" succeeds (Status 200), but the actual request might fail, or you might just be wondering why there are two of them.
+
+2. THE EXPLANATION (What is it?)
+--------------------------------
+This is NOT a bug. It is a standard security feature of all modern web browsers called **CORS (Cross-Origin Resource Sharing)**.
+
+When your Frontend (running on `localhost:3000`) tries to talk to your Backend (running on `localhost:8080`), they are on different "Origins" (ports).
+
+Before the browser sends a "complex" request (like a PATCH request, or a request with JSON data), it asks the server for permission first.
+   - **Step 1 (The Preflight):** Browser asks: "Hey Server, can I send a PATCH request with JSON data from localhost:3000?" (This is the OPTIONS request).
+   - **Step 2 (The Response):** Server replies: "Yes, I allow PATCH requests from localhost:3000." (Status 200 OK).
+   - **Step 3 (The Actual Request):** Browser sends the actual data.
+
+3. THE PROBLEM (Why it causes issues)
+-------------------------------------
+If your Backend Server is not configured to answer "Yes" to Step 1, the browser will **BLOCK** Step 3.
+   - You will see a red error in the console: `Access to fetch has been blocked by CORS policy`.
+   - The Preflight (OPTIONS) request might fail with 403 Forbidden or 401 Unauthorized if your security settings block it.
+
+4. THE SOLUTION (Backend Configuration)
+---------------------------------------
+You must tell your Spring Boot Backend to explicitly allow these requests.
+
+**A. Global CORS Configuration (Best Practice)**
+In your `WebMvcConfig.java` or `WebConfig.java`, you need to allow the `OPTIONS` method and your frontend URL.
+
+```java
+@Override
+public void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/**")
+            .allowedOrigins("http://localhost:3000", "http://localhost:3001") // Your Frontend URLs
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS") // Include OPTIONS and PATCH
+            .allowedHeaders("*")
+            .allowCredentials(true);
+}
+```
+
+**B. Security Configuration (Critical for Preflight)**
+If you are using Spring Security, the "Preflight" (OPTIONS) request often gets blocked because it doesn't have a login token. You must allow it to pass through without authentication.
+
+In `SecurityConfig.java`:
+```java
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ALLOW ALL PREFLIGHT REQUESTS
+    .anyRequest().authenticated()
+)
+```
+
+**Summary:**
+- The "Preflight" entry in your network tab is normal.
+- If it is Green (200 OK), it is working correctly.
+- If it is Red (Failed), you need to fix the CORS config in your Backend.

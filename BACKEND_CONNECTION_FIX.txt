@@ -1,0 +1,63 @@
+Backend Connection Fix Guide
+============================
+
+**STATUS: CONFIRMED CORS ISSUE**
+The screenshot shows `403 Forbidden` errors on `http://localhost:8080/ws/info`. This confirms that the backend is blocking the connection from the frontend (React) because of Cross-Origin Resource Sharing (CORS) policies.
+
+### THE FIX: Update WebSocket Configuration
+
+You MUST update your `WebSocketConfig.java` file in your Spring Boot backend.
+
+**File:** `src/main/java/com/vms/backend/config/WebSocketConfig.java`
+
+Find the `registerStompEndpoints` method and update it to look EXACTLY like this:
+
+```java
+@Override
+public void registerStompEndpoints(StompEndpointRegistry registry) {
+    registry.addEndpoint("/ws")
+            .setAllowedOrigins("http://localhost:3000") // <--- CRITICAL FIX
+            .withSockJS();
+}
+```
+
+**Why this fixes it:**
+By default, Spring Boot blocks WebSocket connections from different origins (like your React app running on port 3000). Adding `.setAllowedOrigins("http://localhost:3000")` explicitly tells the backend to accept connections from your frontend.
+
+---
+
+### Secondary Fix: Global CORS Configuration (Recommended)
+
+To prevent similar errors for other API calls (like fetching the initial dashboard stats), ensure you have a global CORS configuration.
+
+**File:** `src/main/java/com/vms/backend/config/WebConfig.java` (Create if missing)
+
+```java
+package com.vms.backend.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**") // Apply to all endpoints
+                .allowedOrigins("http://localhost:3000") // Allow React Frontend
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```
+
+### Summary of Steps
+1.  **Stop** your Spring Boot backend.
+2.  **Update** `WebSocketConfig.java` with the `.setAllowedOrigins` line.
+3.  **Create/Update** `WebConfig.java` for global CORS support.
+4.  **Restart** the backend.
+5.  **Refresh** the frontend page.
+
+The "Offline" badge should turn to "Live Updates" (green) immediately.

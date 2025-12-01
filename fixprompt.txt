@@ -1,0 +1,50 @@
+### Context
+We are experiencing a `403 Forbidden` error specifically on `PATCH` requests originating from the frontend. A deep-dive analysis reveals a "Split-Brain" configuration issue in the Spring Boot backend where two conflicting classes (`CorsConfig` and `WebMvcConfig`) are attempting to define CORS rules. `WebMvcConfig` is taking precedence but fails to whitelist the `PATCH` HTTP method.
+
+### Objective
+Refactor the backend configuration to establish a **Single Source of Truth** for CORS policies, eliminating redundancy and explicitly enabling the `PATCH` method.
+
+### Action Plan
+Please execute the following two steps precisely:
+
+#### Step 1: Remove Redundant Configuration
+**DELETE** the file `src/main/java/com/vms/backend/config/CorsConfig.java`.
+*   *Reasoning:* This file creates a duplicate `CorsRegistry` bean that conflicts with the MVC config. Removing it prevents race conditions and rule overriding.
+
+#### Step 2: Update & Consolidate WebMvcConfig
+**REPLACE** the contents of `src/main/java/com/vms/backend/config/WebMvcConfig.java` with the code below.
+*   *Changes:* This configuration now handles both Resource Handlers AND CORS mappings.
+*   *Critical Fix:* The `allowedMethods` list now explicitly includes `"PATCH"`.
+
+```java
+package com.vms.backend.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        // Serve uploaded photos from the local filesystem
+        registry.addResourceHandler("/photos/**")
+                .addResourceLocations("file:visitor-photos/");
+    }
+
+    @Override
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000", "http://localhost:3001") // Allow Frontend Ports
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS") // <--- CRITICAL: PATCH ADDED
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```
+
+### Verification
+After applying these changes, the `403 Forbidden` error on `PATCH` requests will be resolved, and the application will rely on a single, maintainable configuration file.

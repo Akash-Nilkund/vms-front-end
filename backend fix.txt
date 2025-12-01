@@ -1,0 +1,28 @@
+The user is reporting an issue where the "All Visitor Reports" table displays "Unknown" for Host and Company columns, even though they are selecting valid options in the check-in form.
+
+Please investigate the `getHistory` endpoint (likely in `VisitorController` or `AdminController`) and the `Visitor` entity mapping.
+
+**Issues to check:**
+1.  **Data Persistence:** Ensure that when a visitor is registered (`/api/visitors/register`), the `companyId` and `hostId` are correctly resolving to `Company` and `Host` entities and being saved in the `Visitor` table.
+2.  **DTO Mapping:** Check the `VisitorHistoryDTO` (or whatever DTO is used for the history endpoint). Ensure it is correctly mapping the `host.name` and `company.name`.
+    - If `visitor.getHost()` is null, it returns null.
+    - If `visitor.getCompany()` is null, it returns null.
+3.  **Lazy Loading:** If you are using Hibernate lazy loading, ensure the transaction is open or you are fetching the related entities before mapping to DTO.
+
+**Required Fix:**
+- Ensure `getHistory` returns the actual Host Name and Company Name instead of null.
+- If the data is missing in the DB for past records, that's fine, but new records must save correctly.
+- Verify the `Visitor` entity has `@ManyToOne` relationships correctly set up for `host` and `company`.
+
+**Example JSON Response Expected:**
+```json
+[
+  {
+    "visitorName": "John Doe",
+    "host": { "name": "Jane Smith" }, // OR "host": "Jane Smith"
+    "company": { "name": "Acme Corp" }, // OR "company": "Acme Corp"
+    ...
+  }
+]
+```
+Currently, it seems to be returning null or "Unknown" is being inferred by the frontend because the fields are missing.

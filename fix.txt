@@ -1,0 +1,42 @@
+### Is `CorsConfig.java` connected to the frontend?
+
+**NO, not directly.**
+
+*   **It is 100% Backend Code:** This is a Java file running on your Spring Boot server. Your React frontend (`localhost:3000`) cannot see, import, or read this file.
+*   **It Acts as a Gatekeeper:** While not "connected" via code, it **controls** the connection. When your Frontend tries to talk to the Backend, the Browser asks the Backend: *"Do you allow `localhost:3000` to send requests?"*
+    *   `CorsConfig` (and `WebMvcConfig`) provides the **Answer** to that question.
+
+### The Problem in Your Code
+You have **TWO** gatekeepers giving different answers:
+
+1.  **`CorsConfig.java`**: "Yes, I allow EVERYTHING (including PATCH)."
+2.  **`WebMvcConfig.java`**: "Yes, I allow GET, POST, PUT, DELETE... but **I do NOT allow PATCH**."
+
+Since `WebMvcConfig` is often loaded last or takes precedence for MVC mappings, it overrides `CorsConfig`, causing the **403 Forbidden** error when you try to use `PATCH`.
+
+### The Fix
+You do not need two separate configuration files doing the same thing.
+
+1.  **DELETE** `CorsConfig.java` entirely. It is redundant.
+2.  **UPDATE** `WebMvcConfig.java` to include "PATCH" and handle everything:
+
+```java
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/photos/**")
+                .addResourceLocations("file:visitor-photos/");
+    }
+
+    @Override
+    public void addCorsMappings(@NonNull CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000", "http://localhost:3001")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS") // <--- Added PATCH
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```

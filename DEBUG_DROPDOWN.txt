@@ -1,0 +1,30 @@
+ISSUE: Empty Company/Host Dropdowns
+
+You are seeing "Select Company" with no options. This means the Frontend is not receiving data from the Backend.
+
+TROUBLESHOOTING STEPS:
+
+1.  **Check Backend Server:**
+    - Is your Spring Boot application running?
+    - Are there any errors in the Java console?
+
+2.  **Check Network Request (Crucial):**
+    - Open your Browser Developer Tools (F12).
+    - Go to the **Network** tab.
+    - Refresh the page.
+    - Look for a request to `companies` and `hosts`.
+    - **Status Failed?** (Red) -> Backend is not reachable (Port issue? CORS?).
+    - **Status 200 OK?** -> Click on it and check the **Response** tab.
+        - Is it `[]` (Empty Array)? -> Your database tables `company` and `host` might be empty or the API is returning nothing.
+        - Is it HTML? -> You might be hitting a wrong URL.
+
+3.  **Verify Database Data:**
+    - Run `SELECT * FROM company;` in your MySQL workbench.
+    - Run `SELECT * FROM host;` in your MySQL workbench.
+    - If these are empty, you need to insert data.
+
+4.  **CORS Error?**
+    - If you see a "CORS error" in the Console tab, your Backend `CorsConfig` might need adjustment to allow `http://localhost:3000`.
+
+**Immediate Fix (If you just want to test Frontend):**
+If you cannot run the backend right now, I can revert the changes to use Mock Data again. Just tell me "Revert to Mock Data".

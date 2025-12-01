@@ -1,0 +1,56 @@
+# Plan: Advanced Filtering and Excel Download for Reports
+
+## Objective
+Implement advanced filtering capabilities and an Excel download feature in the `Reports.jsx` component.
+
+## 1. Advanced Filtering
+
+### UI Changes
+-   Expand the current "Filter" button into a dropdown or a modal/popover containing specific filter fields.
+-   **Fields to Add:**
+    -   **Date**: Date picker or text input (Format: `dd/mm/yy`).
+    -   **Time**: Time picker or text input (Format: `hh:mm`).
+    -   **Host**: Text input or Dropdown (fetched from unique hosts in data).
+    -   **Visitor**: Text input.
+    -   **Company**: Text input or Dropdown.
+    -   **Status**: Dropdown (Approved, Checked In, Checked Out, Rejected, etc.).
+
+### Logic Implementation
+-   Create state variables for each filter criteria.
+-   Update the `filteredVisitors` logic to check all active filter criteria against the visitor data.
+-   Ensure Date and Time filtering handles the specific formats requested.
+
+## 2. Excel Download
+
+### UI Changes
+-   Add a "Download" button (icon: `Download` from lucide-react) next to the Filter button.
+
+### Logic Implementation
+-   **Library**: Use a library like `xlsx` (SheetJS) or `file-saver` with `csv` generation for client-side export.
+    -   *Recommendation*: `xlsx` is better for true Excel (.xlsx) formatting.
+-   **Data Preparation**:
+    -   Create a function `handleDownload` that triggers on button click.
+    -   Map the `filteredVisitors` (currently visible data) to a clean JSON structure matching the table columns:
+        -   Visitor Name
+        -   Host Name
+        -   Company Name
+        -   Time (Range or specific in/out times)
+        -   Status
+        -   Date
+    -   Add a header row with the specific headings requested.
+-   **File Generation**:
+    -   Convert the JSON data to a worksheet.
+    -   Create a workbook and append the worksheet.
+    -   Trigger the download of `Visitor_Reports_[Date].xlsx`.
+
+## 3. Implementation Steps (Future)
+
+1.  **Install Dependencies**: `npm install xlsx`
+2.  **Update Component**: Modify `Reports.jsx`.
+    -   Import `xlsx`.
+    -   Add state for filters.
+    -   Implement `handleDownload` function.
+    -   Update JSX to include the new filter UI and Download button.
+3.  **Testing**:
+    -   Verify filtering works for all fields.
+    -   Verify Excel download contains correct data and formatting.

@@ -1,0 +1,17 @@
+File: e:\VMS front-end\src\services\visitorService.js
+Lines: 19-22
+
+Found Code:
+The function `registerVisitor` is defined as a method within the `visitorService` object, not as a standalone named export.
+
+```javascript
+    // POST - Register new visitor (New Flow)
+    registerVisitor: async (formData) => {
+        const response = await apiClient.post(`${VISITOR_API}/register`, formData);
+        return response.data;
+    },
+```
+
+Context:
+It is part of the default export `visitorService`.
+Usage: `visitorService.registerVisitor(formData)`

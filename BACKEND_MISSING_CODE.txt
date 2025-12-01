@@ -1,0 +1,135 @@
+MISSING BACKEND CODE
+
+The errors (500 Internal Server Error and 400 Bad Request) indicate that your Spring Boot backend is missing the necessary Controllers to handle `/api/hosts` and `/api/companies`.
+
+Please create the following files in your Spring Boot project (e.g., in `src/main/java/com/vms/backend/...`).
+
+---
+
+### 1. HostController.java
+**Path:** `controller/HostController.java`
+
+```java
+package com.vms.backend.controller;
+
+import com.vms.backend.model.Host;
+import com.vms.backend.service.HostService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/hosts")
+@CrossOrigin(origins = "http://localhost:3000") // Allow React Frontend
+public class HostController {
+
+    @Autowired
+    private HostService hostService;
+
+    @GetMapping
+    public ResponseEntity<List<Host>> getAllHosts() {
+        try {
+            List<Host> hosts = hostService.getAllHosts();
+            return ResponseEntity.ok(hosts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+}
+```
+
+---
+
+### 2. CompanyController.java
+**Path:** `controller/CompanyController.java`
+
+```java
+package com.vms.backend.controller;
+
+import com.vms.backend.model.Company;
+import com.vms.backend.service.CompanyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/companies")
+@CrossOrigin(origins = "http://localhost:3000")
+public class CompanyController {
+
+    @Autowired
+    private CompanyService companyService;
+
+    @GetMapping
+    public ResponseEntity<List<Company>> getAllCompanies() {
+        try {
+            List<Company> companies = companyService.getAllCompanies();
+            return ResponseEntity.ok(companies);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+    }
+}
+```
+
+---
+
+### 3. HostService.java (Interface or Class)
+**Path:** `service/HostService.java`
+
+```java
+package com.vms.backend.service;
+
+import com.vms.backend.model.Host;
+import com.vms.backend.repository.HostRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class HostService {
+
+    @Autowired
+    private HostRepository hostRepository;
+
+    public List<Host> getAllHosts() {
+        return hostRepository.findAll();
+    }
+}
+```
+
+---
+
+### 4. CompanyService.java (Interface or Class)
+**Path:** `service/CompanyService.java`
+
+```java
+package com.vms.backend.service;
+
+import com.vms.backend.model.Company;
+import com.vms.backend.repository.CompanyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class CompanyService {
+
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    public List<Company> getAllCompanies() {
+        return companyRepository.findAll();
+    }
+}
+```
+
+**After creating these files, restart your Spring Boot application.**

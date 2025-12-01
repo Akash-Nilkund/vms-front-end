@@ -1,0 +1,30 @@
+BACKEND:
+Tech Stack: Spring Boot (Java)
+DB: SQL (MySQL/PostgreSQL - inferred)
+Auth: JWT (JSON Web Tokens)
+Visitor fields: fullName, email, phone, companyId, hostId, visitorType, duration, photo
+Approval fields: status (PENDING, APPROVED, REJECTED, CHECKED_IN), visitorName, host, company, time
+Allow multiple visits?: Likely Yes (Standard VMS behavior)
+API Format: REST JSON
+Checkout trigger & behavior: Triggered via POST /api/visitors/checkin. Updates visitor status to CHECKED_IN and generates pass.
+
+FRONTEND:
+Framework: React 18
+UI Library: Tailwind CSS, Lucide React
+State Management: React Hooks (useState, useEffect)
+Pages needed:
+- Visitor Check-In (/)
+- Virtual Pass (/pass)
+- Admin Login (/admin-login)
+- Admin Dashboard (/admin)
+- Pending Approvals (/admin/approvals)
+After checkout visibility: Checked-in visitors are filtered out of the Pending list.
+Filters/search/pagination:
+- Search by Visitor Name, Host, or Company.
+- Client-side filtering implemented.
+- Pagination: Not currently implemented (Scrollable list).
+Optional feature list:
+- Reports (Placeholder exists)
+- Settings (Placeholder exists)
+- Email Notifications (Inferred requirement)
+- PDF Pass Generation (Inferred requirement)

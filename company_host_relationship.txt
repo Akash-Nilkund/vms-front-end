@@ -1,0 +1,21 @@
+RELATIONSHIP BETWEEN COMPANY AND HOST
+
+Based on the analysis of your current frontend code (`VisitorCheckInForm.jsx` and `visitorService.js`), here is the answer:
+
+ARE THEY CONNECTED?
+NO. In the current implementation, Company and Host are NOT connected.
+
+EVIDENCE:
+1. Independent Data Fetching:
+   The application fetches "All Companies" and "All Hosts" separately and simultaneously when the page loads.
+   - Code: `await Promise.all([visitorService.getAllCompanies(), visitorService.getAllHosts()])`
+
+2. No Filtering Logic:
+   When you select a "Company" in the dropdown, the "Host" dropdown does NOT change. It continues to show the entire list of all hosts in the system.
+   - There is no code like `hosts.filter(h => h.companyId === selectedCompanyId)`.
+
+CONSEQUENCE:
+- A visitor can currently select "Company A" and "Host B" even if Host B actually works for Company C.
+- To fix this, you would need to:
+  1. Ensure the Backend `Host` entity has a `company_id`.
+  2. Update the Frontend to filter the `hosts` list based on the selected `companyId`.

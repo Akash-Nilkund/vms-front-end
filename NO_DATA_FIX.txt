@@ -1,0 +1,36 @@
+WHY YOU SEE "NO RECORDS FOUND":
+
+1.  **Empty Database**: You likely haven't registered any visitors yet. The system starts empty.
+2.  **Filtering**:
+    -   **Pending Approvals** only shows visitors waiting for approval.
+    -   **Security Console** only shows visitors who are already APPROVED or CHECKED IN.
+    -   **Reports** shows the history of visits.
+
+HOW TO FIX IT (POPULATE DATA):
+
+**Step 1: Register a Visitor (Create Data)**
+1.  Go to the **Home Page** (`http://localhost:3000/`).
+2.  Fill out the **Visitor Check-In Form**.
+3.  Click **"Check In Now"** or **"Pre-Register"**.
+4.  You should see a success message: "Registration successful! Your request is pending approval."
+
+**Step 2: Check "Pending Approvals"**
+1.  Log in to the **Admin Dashboard** (`/admin-login`).
+2.  Go to **Approvals**.
+3.  You should now see the visitor you just registered.
+4.  Click **"Approve"**.
+
+**Step 3: Check "Security Console"**
+1.  Go to the **Security Console**.
+2.  You should now see the visitor you just approved (Status: APPROVED).
+3.  Click **"Check In"**. The status will change to CHECKED_IN.
+
+**Step 4: Check "Reports"**
+1.  Go to **Reports**.
+2.  You should see the record of this visit.
+
+**TROUBLESHOOTING:**
+If you register a visitor but still see nothing:
+-   **Check Backend Console**: Is the Spring Boot app running without errors?
+-   **Check Browser Console (F12)**: Are there red errors when you submit the form?
+-   **Database**: Ensure your database is connected.

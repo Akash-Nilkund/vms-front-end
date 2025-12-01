@@ -1,0 +1,17 @@
+I am facing a critical bug in my Visitor Management System (Spring Boot Backend).
+
+**The Issue:**
+When I "Approve" or "Check In" a specific visitor from the frontend, a SECOND "ghost" visitor named "Akash Nilkund" is automatically created or updated with the **exact same timestamp**.
+
+**Task:**
+Please analyze the following backend files (which I will paste below or you can access):
+1. `src/main/java/com/vms/backend/service/VisitorService.java`
+2. `src/main/java/com/vms/backend/controller/VisitorController.java`
+
+**Please check for and fix the following:**
+1.  **Hardcoded Data:** Look for any code that manually creates a visitor with the name "Akash Nilkund" or similar dummy data inside the `approve` or `checkIn` methods.
+2.  **Incorrect Logic:** Check if the `approveVisitor` or `checkInVisitor` methods are accidentally fetching ALL visitors (`findAll()`) and looping through them, instead of just finding the single visitor by ID (`findById(id)`).
+3.  **Side Effects:** Ensure that the method responsible for checking in a visitor does not have a side effect that creates a duplicate record.
+
+**Goal:**
+The system should ONLY update the status of the specific visitor ID that is passed in the request. It should NOT create or modify any other records.

@@ -1,0 +1,60 @@
+VS Code Error Explanation
+=======================
+
+If the code works in the "Antigravity" environment (or when built with Maven/Gradle directly) but shows errors in VS Code, it is almost always due to **Lombok** or **Project Configuration**.
+
+The Error
+---------
+The error shown in the image is likely:
+`The constructor DashboardMetricsDTO(long, List<CompanyVisitorCountDTO>) is undefined`
+
+This happens at the line:
+`return new com.vms.backend.dto.DashboardMetricsDTO(total, byCompany);`
+
+Possible Causes & Solutions
+---------------------------
+
+### 1. Lombok is Not Working in VS Code (Most Likely)
+If your `DashboardMetricsDTO` class uses the `@AllArgsConstructor` annotation from Lombok to generate the constructor automatically, VS Code needs to have the Lombok extension installed and annotation processing enabled.
+
+**Why it works in Antigravity:** The build system (Maven/Gradle) handles Lombok annotation processing automatically during compilation.
+**Why it fails in VS Code:** The editor's "IntelliSense" doesn't see the generated constructor if the plugin isn't active.
+
+**Fix:**
+*   **Install the "Lombok Annotations Support for VS Code" extension** (by Nicoespeon or similar).
+*   **Enable Annotation Processing**: Open VS Code Settings -> Search for "Annotation Processing" -> Check "Java > Jdt > Ls > Android: Support" (or similar Java configuration settings depending on version).
+*   **Restart VS Code**.
+
+### 2. Manual Fix (If you don't want to rely on Lombok)
+You can manually add the constructor to your `DashboardMetricsDTO.java` file.
+
+**File:** `src/main/java/com/vms/backend/dto/DashboardMetricsDTO.java`
+
+```java
+package com.vms.backend.dto;
+
+import java.util.List;
+import lombok.Data; // Keep this if using other Lombok features
+import lombok.AllArgsConstructor; // You can remove this if adding manual constructor
+
+@Data
+// @AllArgsConstructor // <-- If this is here, Lombok should generate it.
+public class DashboardMetricsDTO {
+    private long totalVisitors;
+    private List<CompanyVisitorCountDTO> companyVisitorCounts;
+
+    // MANUAL CONSTRUCTOR (Add this to fix VS Code error immediately)
+    public DashboardMetricsDTO(long totalVisitors, List<CompanyVisitorCountDTO> companyVisitorCounts) {
+        this.totalVisitors = totalVisitors;
+        this.companyVisitorCounts = companyVisitorCounts;
+    }
+}
+```
+
+### 3. Project Not Updated (Maven/Gradle)
+Sometimes VS Code gets out of sync with the `pom.xml` or `build.gradle`.
+
+**Fix:**
+*   Right-click `pom.xml` (or `build.gradle`) in VS Code file explorer.
+*   Select **"Update Project"** or **"Reload Project"**.
+*   Run **"Java: Clean Java Language Server Workspace"** from the Command Palette (`Ctrl+Shift+P`).

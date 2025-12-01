@@ -1,0 +1,7 @@
+Yes, the company and host names are fetched dynamically from the backend database (vms_db).
+
+1. The frontend component `VisitorCheckInForm.jsx` calls `visitorService.getAllCompanies()` and `visitorService.getAllHosts()` when it loads.
+2. These service methods make HTTP GET requests to `/api/companies` and `/api/hosts` respectively.
+3. The backend (Spring Boot) handles these requests by querying the `companies` and `hosts` tables in the `vms_db` database and returning the results.
+
+There is no hardcoded data for companies or hosts in the frontend code.

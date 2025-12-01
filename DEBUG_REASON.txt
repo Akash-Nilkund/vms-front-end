@@ -1,0 +1,24 @@
+ISSUE 1: "EXTRA VISITOR" IN SECURITY CONSOLE
+When you click the Blue "Instant Approval" button, the system:
+1. Approves the request.
+2. Immediately checks them in.
+3. Adds them to the "Security Console" list.
+
+The reason you see "Extra" visitors is that **previous visitors were never checked out**.
+- If you test with "Akash" and don't check him out, he stays in the list.
+- If you test again with "Akash" (or "abc") and click the Blue button, a NEW entry is added.
+- Now you see TWO people.
+
+**Solution:**
+Always click the red **"Check Out"** button in the Security Console when you are done with a visitor. The Blue button is working correctly; it is just adding to the list of people currently inside.
+
+---
+
+ISSUE 2: REPORTS SHOWING "CHECKED OUT" TIME INCORRECTLY
+You noticed that Reports showed a time range (e.g., "11:29 PM - 12:30 PM") even though the visitor was still "Active".
+- This happened because the system was displaying the "Expected Duration" as the "Out Time".
+
+**Solution:**
+I have updated the code in `Reports.jsx`.
+- Now, the report will only show an "Out Time" if the visitor is actually marked as **CHECKED_OUT**.
+- If they are still **CHECKED_IN**, it will correctly say **"Active"**.

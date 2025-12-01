@@ -1,0 +1,24 @@
+Pre-Register Submission Problem Analysis
+
+The error message "Required part 'visitor' or 'visitorJsonData' is not present" (Status 400) indicates that the Spring Boot backend is rejecting the request because it cannot find the expected data part.
+
+Current Implementation (Frontend):
+- We are sending a multipart request.
+- One part is named "visitor".
+- It is sent as a Blob with `Content-Type: application/json`.
+- Another optional part is "photo".
+
+Why it is failing:
+1. Part Name Mismatch: The error suggests the backend might be looking for a part named "visitorJsonData" as an alternative to "visitor". If the backend logic strictly prefers or checks "visitorJsonData" in a specific way that fails for "visitor", this could be the cause.
+2. Content-Type Issue: While `@RequestPart` in Spring Boot typically requires `application/json`, some configurations or usage of `@RequestParam` might expect a simple String (text/plain). If the backend expects a String, sending a Blob with `application/json` might cause it to be treated as a file attachment rather than a parameter, leading to the "part not present" error.
+3. Axios Configuration: The default Axios instance has `Content-Type: application/json` set globally. While passing `FormData` usually overrides this automatically to `multipart/form-data` with the correct boundary, any interference with this mechanism could result in a malformed request.
+
+Recommendation (For Backend Developer):
+- Check the `VisitorController` signature.
+- If it uses `@RequestPart("visitor") VisitorDTO visitor`, ensure it accepts `application/json`.
+- If it uses `@RequestParam("visitor") String visitor`, the frontend should send a simple string, not a Blob.
+- Verify if the parameter name is exactly "visitor" or "visitorJsonData".
+
+Recommendation (For Frontend Fix):
+- Try changing the part name from 'visitor' to 'visitorJsonData' in `VisitorCheckInForm.jsx`.
+- If that fails, try sending the JSON as a simple string: `submissionData.append('visitor', JSON.stringify(visitorPayload));` (removing the Blob wrapper).
